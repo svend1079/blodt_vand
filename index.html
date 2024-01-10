@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leaflet Map Example</title>
+    <!-- Include Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Include Leaflet JavaScript -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Include Leaflet.pattern JavaScript -->
+    <script src="https://unpkg.com/leaflet.pattern/dist/leaflet.pattern.js"></script>
+    <!-- Include Leaflet Control Geocoder -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
+    <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <style>
+        /* Set the map container to take the full size of the page */
+        body, html {
+            height: 100%;
+            margin: 0;
+        }
+        #map {
+            height: 100vh;
+            width: 100%;
+        }
+        .leaflet-control-slider {
+            position: relative;
+            background: white;
+            border-radius: 5px;
+            padding: 10px;
+        }
+        .leaflet-control-slider input {
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <!-- Map container -->
+    <div id="map"></div>
+
+    <script>
+        // Initialize the map
+        var map = L.map('map').setView([55.6902, 12.45], 14);
+
+        // Add a tile layer to the map
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+
+        var stripes = new L.StripePattern({
+            angle: 45,
+            weight: 2,
+            spaceWeight: 9999,
+            color: '#c6ef75',
+            opacity: 1,
+            spaceColor: '#0f464b',
+            spaceOpacity: 1,
+            height: 20
+        });
+        stripes.addTo(map);
+
+        // Custom control for opacity slider
+        var opacityControl = L.control({ position: 'topright' });
+
+        opacityControl.onAdd = function () {
+            var div = L.DomUtil.create('div', 'leaflet-control-slider');
+            div.innerHTML = '<label>Opacity</label><input type="range" min="0" max="1" step="0.001" value="1" id="opacity-slider">';
+            L.DomEvent.disableClickPropagation(div);
+            return div;
+        };
+
+        opacityControl.addTo(map);
+
+        // Event listener for opacity slider
+        document.getElementById('opacity-slider').addEventListener('input', function (e) {
+            var opacityValue = parseFloat(e.target.value);
+            console.log('Opacity Value:', opacityValue);
+            updateOpacity(opacityValue);
+        });
+
+        // Load GeoJSON file and add it to the map as a polygon
+        var geojsonLayer;
+        fetch('Rødovre.geojson')
+            .then(response => response.json())
+            .then(data => {
+                geojsonLayer = L.geoJSON(data, {
+                    style: function (feature) {
+                        var status = feature.properties.Status;
+                        var styleOptions = {
+                            weight: 2,
+                            opacity: 1,
+                            color: 'white',
+                            fillOpacity: 1
+                        };
+                        if (status === 1) {
+                            styleOptions.fillColor = '#c6ef75';
+                        } else if (status === 2) {
+                            styleOptions.fillColor = 'red';
+                            styleOptions.fillPattern = stripes;
+                        } else if (status === 3) {
+                            styleOptions.fillColor = '#0f464b';
+                        } else {
+                            styleOptions.fillColor = 'gray';
+                        }
+
+                        return styleOptions;
+                    },
+                    onEachFeature: function (feature, layer) {
+                        layer.on('click', function (event) {
+                            var properties = feature.properties;
+                            var popupContent = properties.navn + '<br>' + properties.hårdhed;
+                            L.popup().setLatLng(event.latlng).setContent(popupContent).openOn(map);
+                        });
+                    }
+                }).addTo(map);
+            })
+            .catch(error => console.error('Error loading GeoJSON:', error));
+
+        // Function to update opacity
+        function updateOpacity(opacity) {
+            if (geojsonLayer) {
+                geojsonLayer.eachLayer(function (layer) {
+                    layer.setStyle({ fillOpacity: opacity });
+                });
+            }
+        }
+
+        // Add Geocoder control
+        L.Control.geocoder({defaultMarkGeocode: false})
+        .on('markgeocode', function(e) {
+            var bbox = e.geocode.bbox;
+            var poly = L.polygon([
+              bbox.getSouthEast(),
+              bbox.getNorthEast(),
+              bbox.getNorthWest(),
+              bbox.getSouthWest()
+            ])
+            map.fitBounds(poly.getBounds());
+          })
+          .addTo(map);
+    </script>
+</body>
+</html>

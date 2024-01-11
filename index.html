@@ -13,6 +13,7 @@
     <!-- Include Leaflet Control Geocoder -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
     <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
+    <script src="Leaflet.SmoothWheelZoom-master/SmoothWheelZoom.js"></script>
     <style>
         /* Set the map container to take the full size of the page */
         body, html {
@@ -58,6 +59,23 @@
             background-size: 18px;
             background-color: rgba(255, 255, 255, 1);
           }
+
+            .custom-popup {
+                font-family: 1rem Inter, 'Times New Roman', Times, serif, sans-serif;
+                max-width: 300px;
+                color: #0f464b;
+            }
+
+            .popup-title {
+                font-size: 20px;
+                font-weight: bold;
+            }
+
+            .popup-description {
+                font-size: 16px;
+                color:black
+            }
+</style>
           
     </style>
 </head>
@@ -67,7 +85,12 @@
 
     <script>
         // Initialize the map
-        var map = L.map('map').setView([55.6902, 12.45], 14);
+        var map = L.map('map', {
+            scrollWheelZoom: false, // disable original zoom function
+            smoothWheelZoom: true,  // enable smooth zoom 
+            smoothSensitivity: 1
+        })
+        .setView([55.6902, 12.45], 14.2);
 
         // Add a tile layer to the map
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -91,7 +114,7 @@
 
         opacityControl.onAdd = function () {
             var div = L.DomUtil.create('div', 'leaflet-control-slider');
-            div.innerHTML = '<label>Opacity</label><input type="range" min="0" max="1" step="0.001" value="1" id="opacity-slider">';
+            div.innerHTML = '<label>Gennemsigtighed</label><input type="range" min="0" max="1" step="0.001" value="1" id="opacity-slider">';
             L.DomEvent.disableClickPropagation(div);
             return div;
         };
@@ -135,7 +158,10 @@
                     onEachFeature: function (feature, layer) {
                         layer.on('click', function (event) {
                             var properties = feature.properties;
-                            var popupContent = properties.navn + '<br>' + properties.hårdhed;
+                            var popupContent = '<div class="custom-popup">' +
+                            '<div class="popup-title">' + properties.navn + '</div><br>' + 
+                            '<div class="popup-description">' + properties.hårdhed + ' &degdH</div>' +
+                            '</div>';
                             L.popup().setLatLng(event.latlng).setContent(popupContent).openOn(map);
                         });
                     }

@@ -26,12 +26,19 @@
         }
         .leaflet-control-slider {
             position: relative;
-            background: white;
+            background: #C6EF75;
             border-radius: 5px;
             padding: 10px;
+            border: 3px solid white;
         }
         .leaflet-control-slider input {
             width: 100%;
+        }
+
+        .leaflet-control-slider label {
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            color: #0f464b;
         }
 
         .legend {
@@ -84,18 +91,31 @@
     <div id="map"></div>
 
     <script>
+
+        var southWest = L.latLng(55.54, 12);
+        var northEast = L.latLng(55.84, 12.8);
+        var bounds = L.latLngBounds(southWest, northEast);
+
         // Initialize the map
         var map = L.map('map', {
+            minZoom: 11,
+            maxBounds: bounds,
             scrollWheelZoom: false, // disable original zoom function
             smoothWheelZoom: true,  // enable smooth zoom 
-            smoothSensitivity: 1
+            smoothSensitivity: 1,
         })
-        .setView([55.6902, 12.45], 14.2);
+        .setView([55.657, 12.7], 12);
 
         // Add a tile layer to the map
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors'
+            attribution: '<a href="https://www.openstreetmap.org/copyright">&#169 OpenStreetMap</a>'
         }).addTo(map);
+
+        //var wmsLayer = L.tileLayer.wms('https://api.dataforsyningen.dk/topo_skaermkort_DAF?service=WMS&request=GetCapabilities&token=b13445c09727289ea77913374cac72ce', {
+        //    layers: 'dtk_skaermkort_daempet_48_print',
+        //    format: 'image/png',
+        //    attribution: '<a href="https://dataforsyningen.dk/">&#169 Dataforsyningen</a>'
+        //}).addTo(map);
 
         var stripes = new L.StripePattern({
             angle: 45,
@@ -128,29 +148,31 @@
             updateOpacity(opacityValue);
         });
 
+        
+
         // Load GeoJSON file and add it to the map as a polygon
         var geojsonLayer;
-        fetch('Rødovre.geojson')
+        fetch('hovedstadsområde_WGS.geojson')
             .then(response => response.json())
             .then(data => {
                 geojsonLayer = L.geoJSON(data, {
                     style: function (feature) {
-                        var status = feature.properties.Status;
+                        var status = feature.properties.status;
                         var styleOptions = {
                             weight: 2,
                             opacity: 1,
                             color: 'white',
                             fillOpacity: 1
                         };
-                        if (status === 1) {
+                        if (status === "1") {
                             styleOptions.fillColor = '#c6ef75';
-                        } else if (status === 2) {
+                        } else if (status === "2") {
                             styleOptions.fillColor = 'red';
                             styleOptions.fillPattern = stripes;
-                        } else if (status === 3) {
+                        } else if (status === "3") {
                             styleOptions.fillColor = '#0f464b';
                         } else {
-                            styleOptions.fillColor = 'gray';
+                            styleOptions.fillColor = '#e5e4dc';
                         }
 
                         return styleOptions;
@@ -168,6 +190,37 @@
                 }).addTo(map);
             })
             .catch(error => console.error('Error loading GeoJSON:', error));
+        
+              // Load GeoJSON file and add it to the map as a line
+        fetch('kom_omrids.geojson')
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: function (feature) {
+                    return {
+                        weight: 4,
+                        color: 'white'
+                    };
+                }
+            }).addTo(map);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
+
+        fetch('ocean.geojson')
+        .then(response => response.json())
+        .then(data => {
+            L.geoJSON(data, {
+                style: function (feature) {
+                    return {
+                        weight: 2,
+                        color: '#d5e8eb',
+                        fillColor: '#d5e8eb',
+                        fillOpacity: '1'
+                    };
+                }
+            }).addTo(map);
+        })
+        .catch(error => console.error('Error loading GeoJSON:', error));
 
         // Function to update opacity
         function updateOpacity(opacity) {
@@ -205,6 +258,9 @@
           };
           
           legend.addTo(map);
+
+        
+
     </script>
 </body>
 </html>

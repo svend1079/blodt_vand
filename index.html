@@ -26,10 +26,10 @@
         }
         .leaflet-control-slider {
             position: relative;
-            background: #C6EF75;
+            background: white;
             border-radius: 5px;
             padding: 10px;
-            border: 3px solid white;
+            border: 1px solid black;
         }
         .leaflet-control-slider input {
             width: 100%;
@@ -37,8 +37,9 @@
 
         .leaflet-control-slider label {
             font-family: 'Inter', sans-serif;
-            font-size: 14px;
+            font-size: 1rem;
             color: #0f464b;
+            font-weight: bold;
         }
 
         .legend {
@@ -93,7 +94,7 @@
     <script>
 
         var southWest = L.latLng(55.54, 12);
-        var northEast = L.latLng(55.84, 12.8);
+        var northEast = L.latLng(55.84, 13);
         var bounds = L.latLngBounds(southWest, northEast);
 
         // Initialize the map
@@ -104,7 +105,7 @@
             smoothWheelZoom: true,  // enable smooth zoom 
             smoothSensitivity: 1,
         })
-        .setView([55.657, 12.7], 12);
+        .setView([55.657, 12.3], 11);
 
         // Add a tile layer to the map
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -134,7 +135,7 @@
 
         opacityControl.onAdd = function () {
             var div = L.DomUtil.create('div', 'leaflet-control-slider');
-            div.innerHTML = '<label>Gennemsigtighed</label><input type="range" min="0" max="1" step="0.001" value="1" id="opacity-slider">';
+            div.innerHTML = '<label>Gennemsigtighed</label><input type="range" min="0" max="1" step="0.01" value="0.7" id="opacity-slider">';
             L.DomEvent.disableClickPropagation(div);
             return div;
         };
@@ -159,10 +160,10 @@
                     style: function (feature) {
                         var status = feature.properties.status;
                         var styleOptions = {
-                            weight: 2,
+                            weight: 1,
                             opacity: 1,
                             color: 'white',
-                            fillOpacity: 1
+                            fillOpacity: 0.7
                         };
                         if (status === "1") {
                             styleOptions.fillColor = '#c6ef75';
@@ -180,14 +181,42 @@
                     onEachFeature: function (feature, layer) {
                         layer.on('click', function (event) {
                             var properties = feature.properties;
-                            var popupContent = '<div class="custom-popup">' +
-                            '<div class="popup-title">' + properties.navn + '</div><br>' + 
+                    var popupContent;
+
+                    if (properties.status === "4") {
+                        popupContent = '<div class="custom-popup">' +
+                            '<div class="popup-title">' + properties.navn + '</div><br>' +
+                            '<div class="popup-description">Uden for HOFORs forsyning</div>' +
+                            '</div>';
+                    } 
+                    
+                    else if (properties.status === "1") {
+                        popupContent = '<div class="custom-popup">' +
+                            '<div class="popup-title">' + properties.navn + '</div><br>' +
+                            '<div class="popup-description">Blødere vand</div><br>' +
+                            '<div class="popup-description">' + properties.hårdhed + ' &degdH</div><br>' +
+                            '</div>';
+                    }
+                    
+                    else if (properties.status === "2") {
+                        popupContent = '<div class="custom-popup">' +
+                            '<div class="popup-title">' + properties.navn + '</div><br>' +
+                            '<div class="popup-description">Varierende hårdhed</div><br>' +
+                            '<div class="popup-description">' + properties.hårdhed + ' &degdH</div><br>' +
+                            '</div>';
+                    }
+
+                    else {
+                        popupContent = '<div class="custom-popup">' +
+                            '<div class="popup-title">' + properties.navn + '</div><br>' +
+                            '<div class="popup-description">Hårdt vand</div><br>' +
                             '<div class="popup-description">' + properties.hårdhed + ' &degdH</div>' +
                             '</div>';
+                    }
                             L.popup().setLatLng(event.latlng).setContent(popupContent).openOn(map);
                         });
                     }
-                }).addTo(map);
+                }).addTo(map).bringToBack();
             })
             .catch(error => console.error('Error loading GeoJSON:', error));
         
@@ -212,13 +241,13 @@
             L.geoJSON(data, {
                 style: function (feature) {
                     return {
-                        weight: 2,
-                        color: '#d5e8eb',
-                        fillColor: '#d5e8eb',
+                        weight: 3,
+                        color: '#99d6ff',
+                        fillColor: '#99d6ff',
                         fillOpacity: '1'
                     };
                 }
-            }).addTo(map);
+            }).addTo(map).bringToFront();
         })
         .catch(error => console.error('Error loading GeoJSON:', error));
 

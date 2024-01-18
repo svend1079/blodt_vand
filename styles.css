@@ -1,0 +1,73 @@
+/* Set the map container to take the full size of the page */
+body, html {
+    height: 100%;
+    margin: 0;
+}
+#map {
+    height: 100vh;
+    width: 100%;
+}
+
+.leaflet-control-slider {
+    position: relative;
+    background: white;
+    border-radius: 5px;
+    padding: 10px;
+    border: 1px solid black;
+}
+.leaflet-control-slider input {
+    width: 100%;
+}
+
+.leaflet-control-slider label {
+    font-family: 'Inter', sans-serif;
+    font-size: 1rem;
+    color: #0f464b;
+    font-weight: bold;
+}
+
+.legend {
+    padding: 6px 8px;
+    font: 1rem Inter, Helvetica, sans-serif;
+    background: rgba(255, 255, 255, 1);
+    line-height: 24px;
+    color: #0f464b;
+}
+
+.legend span {
+    position: relative;
+    bottom: 3px;
+}
+
+.legend i {
+    width: 18px;
+    height: 18px;
+    float: left;
+    margin: 0 8px 0 0;
+    opacity: 0.7;
+}
+
+.custom-popup {
+    font-family: 1rem Inter, 'Times New Roman', Times, serif, sans-serif;
+    max-width: 300px;
+    color: #0f464b;
+}
+
+.popup-title {
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.popup-description {
+    font-size: 16px;
+    color: black;
+}
+
+/* Set cursor to pointer for clickable layers  */
+.leaflet-grab{
+    cursor: default;
+} 
+
+.leaflet-clickable:hover{
+    cursor: move;
+}
